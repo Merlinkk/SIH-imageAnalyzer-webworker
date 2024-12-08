@@ -142,10 +142,10 @@ If the content is related to natural disaster events such as floods, earthquakes
         console.log(generatedPost);
 
         // Save to MongoDB
-        await saveToDatabase(generatedPost);
+        // await saveToDatabase(generatedPost);
 
         // update database
-        updateDatabase(generatedPost);
+        await updateDatabase(generatedPost);
 
         // Append to final data
         data += JSON.stringify(generatedPost) + " \n ";
