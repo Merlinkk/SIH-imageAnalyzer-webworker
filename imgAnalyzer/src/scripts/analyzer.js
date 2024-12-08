@@ -1,26 +1,46 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { sahyog } from "../connection/dbConnection";
+import { sahyogdb } from "../connection/dbConnection";
+
+import { updateDatabase } from "../postService/dataPoster";
 
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY);
 
-const disasterPostSchema = `
-{
-  "type": "string",
-  "location": {
-    "city": "string",
-    "state": "string",
-    "country": "string"
-  },
-  "coordinates": {
-    "timestamp": "string (ISO 8601 format)"
-  },
-  "description": "string",
-  image : "string(url)"
-}
-  `
+// const disasterPostSchema = `
+// {
+//   "type": "string",
+//   "location": {
+//     "city": "string",
+//     "state": "string",
+//     "country": "string"
+//   },
+//   "coordinates": {
+//     "timestamp": "string (ISO 8601 format)"
+//   },
+//   "description": "string",
+//   image : "string(url)"
+// }
+//   `
 
 // Translation function
+
+const disasterPostSchema = `
+{
+  type: string (required. for example flood, earthquake, cyclone, storm ),
+  location: {
+    city: string | null (optional),
+    state: string | null (optional),
+    country: string | null (optional),
+    coordinates: {
+      latitude: number | null (optional),
+      longitude: number | null (optional)
+    } (optional)
+  } (optional),
+  timestamp: string | null (optional),
+  description: string | null (optional),
+}
+`;
+
 async function translate(inputText, inputLanguage, outputLanguage = "en") {
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${inputLanguage}&tl=${outputLanguage}&dt=t&q=${encodeURI(inputText)}`;
   try {
@@ -41,7 +61,7 @@ function sleep(ms) {
 // MongoDB connection helper
 async function saveToDatabase(postObject) {
   try {
-    const db = sahyog.db();
+    const db = sahyogdb.db();
     const collection = db.collection("dbstorefiltered");
     await collection.insertOne(postObject);
     console.log("Post saved to the filtered database. -> ", postObject);
@@ -115,13 +135,17 @@ If the content is related to natural disaster events such as floods, earthquakes
 
       try {
         const generatedPost = {
-          ...JSON.parse(generatedText), // Parse the cleaned JSON
-          originalPost: post.post, // Include the original post in the final object
-          image: imageUrl, // Add image URL directly
+          transformedPost : {...JSON.parse(generatedText)}, // Parse the cleaned JSON
+          originalPost : post
         };
+
+        console.log(generatedPost);
 
         // Save to MongoDB
         await saveToDatabase(generatedPost);
+
+        // update database
+        updateDatabase(generatedPost);
 
         // Append to final data
         data += JSON.stringify(generatedPost) + " \n ";

@@ -1,11 +1,15 @@
 import { MongoClient } from "mongodb";
 import "dotenv/config";
 
-const sahyog = new MongoClient(process.env.MONGODB_ATLAS_URI);
+const sahyogdb = new MongoClient(process.env.MONGODB_ATLAS_URI);
+const AK = new MongoClient(process.env.MONGODB_ATLAS_URI_AK);
+
+let disasterPostsCollection;
 
 export async function connectDB() {
   try {
-    await sahyog.connect();
+    await sahyogdb.connect();
+    disasterPostsCollection = sahyogdb.db().collection("disasterPosts");
     console.log("Successfully connected to Shayog");
 
   } catch (error) {
@@ -14,4 +18,4 @@ export async function connectDB() {
   }
 }
 
-export { sahyog };
+export { sahyogdb, disasterPostsCollection, AK };

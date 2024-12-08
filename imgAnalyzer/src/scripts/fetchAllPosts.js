@@ -1,10 +1,10 @@
-import { sahyog } from './../connection/dbConnection'
+import { AK } from './../connection/dbConnection'
 
 
 export default async function fetchAllPosts() {
     let allPosts = [];
     try {
-      const db = sahyog.db();
+      const db = AK.db();
       const collection = db.collection('raw_data');
   
       allPosts = await collection.find().toArray();
