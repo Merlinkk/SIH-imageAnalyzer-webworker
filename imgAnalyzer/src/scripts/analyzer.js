@@ -136,7 +136,8 @@ If the content is related to natural disaster events such as floods, earthquakes
       try {
         const generatedPost = {
           transformedPost : {...JSON.parse(generatedText)}, // Parse the cleaned JSON
-          originalPost : post
+          originalPost : post,
+          timestamp: new Date().toISOString()
         };
 
         console.log(generatedPost);

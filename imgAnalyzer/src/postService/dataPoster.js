@@ -55,6 +55,7 @@ async function updateDatabase(post) {
             embedding: postEmbedding,
             numberOfPosts: 1,
             posts: [post.originalPost],
+            timestamp : post.timestamp
           };
 
           console.log("\n\n\n\n",newPost,"\n\n\n");

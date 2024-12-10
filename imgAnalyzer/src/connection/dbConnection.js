@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import "dotenv/config";
 
 const sahyogdb = new MongoClient(process.env.MONGODB_ATLAS_URI);
-const AK = new MongoClient(process.env.MONGODB_ATLAS_URI_AK);
+const sahyogdb_Dev = new MongoClient(process.env.MONGODB_ATLAS_URI_DEV);
 
 let disasterPostsCollection;
 
@@ -18,4 +18,4 @@ export async function connectDB() {
   }
 }
 
-export { sahyogdb, disasterPostsCollection, AK };
+export { sahyogdb, disasterPostsCollection, sahyogdb_Dev};
