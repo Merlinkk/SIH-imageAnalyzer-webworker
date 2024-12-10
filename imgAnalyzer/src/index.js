@@ -29,16 +29,15 @@ app.use("*", async (c, next) => {
 async function processPosts() {
   try {
     const posts = await fetchAllPosts();
+
     console.log(posts);
 
     if (posts.length > 0) {
 
-      const successfulPostIds = posts.map(
-        (post) => post.originalPost
-      );
+      const postIds = posts.map(post => post._id);
 
       const result = await unfilteredPostsCollection.updateMany(
-        { _id: { $in: successfulPostIds } },
+        { _id: { $in: postIds } },
         { $set: { filtered: true } }
       );
 
