@@ -1,16 +1,17 @@
-import { sahyogdb_Dev } from './../connection/dbConnection'
-
+import { unfilteredPostsCollection } from "../connection/dbConnection.js";
 
 export default async function fetchAllPosts() {
-    let allPosts = [];
-    try {
-      const db = sahyogdb_Dev.db();
-      const collection = db.collection('unfilteredposts');
-  
-      allPosts = await collection.find().toArray();
-      // console.log('All available posts:', allPosts);
-    } catch (error) {
-      console.error('Error fetching data from MongoDB:', error);
-    }
-    return allPosts;
+  let allPosts = [];
+  try {
+    allPosts = await unfilteredPostsCollection
+      .find({
+        filtered: false,
+        "post.imageUrl": { $ne: null },
+      })
+      .toArray();
+  } catch (error) {
+    console.error("Error updating and fetching data from MongoDB:", error);
   }
+
+  return allPosts;
+}

@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { sahyogdb } from "../connection/dbConnection";
 
 import { updateDatabase } from "../postService/dataPoster";
 
@@ -58,21 +57,9 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// MongoDB connection helper
-async function saveToDatabase(postObject) {
-  try {
-    const db = sahyogdb.db();
-    const collection = db.collection("dbstorefiltered");
-    await collection.insertOne(postObject);
-    console.log("Post saved to the filtered database. -> ", postObject);
-  } catch (error) {
-    console.error("Error saving post to database:", error);
-  }
-}
 
 
 export default async function analyzePosts(posts) {
-  let data = "";
   try {
     const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-pro" });
 
@@ -149,7 +136,6 @@ If the content is related to natural disaster events such as floods, earthquakes
         await updateDatabase(generatedPost);
 
         // Append to final data
-        data += JSON.stringify(generatedPost) + " \n ";
       } catch (parseError) {
         console.error(
           `Error parsing AI-generated JSON for post ID ${post._id}:`,
@@ -167,6 +153,4 @@ If the content is related to natural disaster events such as floods, earthquakes
   } catch (error) {
     console.error("An error occurred:", error);
   }
-
-  return data;
 }

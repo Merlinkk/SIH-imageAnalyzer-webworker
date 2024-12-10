@@ -1,7 +1,7 @@
-import { connectDB } from "./connection/dbConnection.js";
+import { connectDB, unfilteredPostsCollection } from "./connection/dbConnection.js";
 import fetchAllPosts from "./scripts/fetchAllPosts.js";
 import analyzePosts from "./scripts/analyzer.js";
-import { updateDatabase, setIO } from './postService/dataPoster.js';
+import { setIO } from './postService/dataPoster.js';
 import { initializeSocketIO } from './socket/socketConfig.js';
 
 import { Hono } from "hono";
@@ -10,7 +10,6 @@ import { cors } from "hono/cors";
 
 const app = new Hono();
 
-// CORS configuration
 app.use(
   "*",
   cors({
@@ -18,7 +17,6 @@ app.use(
   })
 );
 
-// JSON parsing middleware
 app.use("*", async (c, next) => {
   try {
     c.req.body = await c.req.json();
@@ -28,28 +26,46 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Register stats route
-// app.route('/stats', statsRoute);
-
-/**
- * Fetches posts, processes them, and updates the database.
- */
-async function main() {
+async function processPosts() {
   try {
-    const posts = await fetchAllPosts(); // Await the data before returning
-    const data = await analyzePosts(posts); // Await the analyzePosts function
+    const posts = await fetchAllPosts();
+    console.log(posts);
 
-    // console.log(data);
+    if (posts.length > 0) {
 
-    // await updateDatabase(filteredData);
+      const successfulPostIds = posts.map(
+        (post) => post.originalPost
+      );
+
+      const result = await unfilteredPostsCollection.updateMany(
+        { _id: { $in: successfulPostIds } },
+        { $set: { filtered: true } }
+      );
+
+      console.log(`Marked ${result.modifiedCount} posts as filtered.`);
+      
+      await analyzePosts(posts);
+    } else {
+      console.log("No posts were successfully transformed.");
+    }
   } catch (error) {
-    console.error("Error in fetching posts:", error);
+    console.error("Error in processing posts:", error);
   }
 }
 
-/**
- * Starts the server and initializes necessary components.
- */
+async function runMain(interval = 15000) {
+  let iteration = 0;
+  while (true) {
+    try {
+      console.log(`Iteration: ${++iteration}`);
+      await processPosts();
+      await new Promise((resolve) => setTimeout(resolve, interval));
+    } catch (error) {
+      console.error("Error in runMain loop:", error);
+    }
+  }
+}
+
 async function startServer() {
   const PORT = process.env.PORT || 3000;
 
@@ -69,14 +85,11 @@ async function startServer() {
 
     console.log(`Server is running on port ${PORT}`);
 
-    // Perform initial data fetch and update
-    await main();
-
-    // Set up periodic updates every 15 seconds
-    // setInterval(main, 15000);
+    // Start the recurring task
+    runMain().catch(console.error);
   } catch (error) {
     console.error("Error in starting server:", error);
-    process.exit(1); // Exit process on failure
+    process.exit(1);
   }
 }
 
