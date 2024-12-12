@@ -1,17 +1,20 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 import "dotenv/config";
 
-const newsDB = new MongoClient(process.env.mongoURI);
-
+// Use the Mongoose connection method to connect to MongoDB
 export async function connectDB() {
   try {
-    await newsDB.connect();
-    console.log("Successfully connected to AK db ");
+    // Connect to the MongoDB server using the connection string from environment variables
+    await mongoose.connect(process.env.mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
+    console.log("Successfully connected to AK db ");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
-    process.exit(1);
+    process.exit(1); // Exit process if the connection fails
   }
 }
 
-export { newsDB };
+export { mongoose };
