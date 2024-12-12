@@ -4,6 +4,7 @@ import { connectDB } from "./connection/dbConnection.js";
 
 // import fu from "./scripts/fetchAllNews.js";
 import { extractRelevantData } from "./scripts/webscraper1.js";
+import { extractRelevantArticle } from "./scripts/webscraper2.js";
 
 
 
@@ -12,7 +13,8 @@ const startNewsUpdater = async () => {
     await connectDB();
     console.log("Database connected successfully");
 
-    await extractRelevantData();
+    // await extractRelevantData();
+    await extractRelevantArticle();
   } catch (error) {
     console.error("Failed to start news updater:", error);
     process.exit(1);
